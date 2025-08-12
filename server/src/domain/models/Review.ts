@@ -1,4 +1,5 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema, PaginateModel } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 export interface IReview extends Document {
   album: mongoose.Types.ObjectId;
@@ -136,4 +137,11 @@ reviewSchema.post('findOneAndDelete', async function(doc) {
   }
 });
 
-export const Review = mongoose.model<IReview>('Review', reviewSchema); 
+// Add the paginate plugin to the schema
+reviewSchema.plugin(mongoosePaginate);
+
+// Create the paginated model
+interface IReviewModel<T extends Document> extends PaginateModel<T> {}
+
+// Create and export the model
+export const Review = mongoose.model<IReview, IReviewModel<IReview>>('Review', reviewSchema); 
