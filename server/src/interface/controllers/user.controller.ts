@@ -1,124 +1,189 @@
-// import { Request, Response } from 'express';
-// import { UserService } from '../../application/services/UserService';
-// import { CreateUserDto, UpdateUserDto, GetUsersQueryDto } from '../../application/dtos/user/user.dtos';
+import { Request, Response, NextFunction } from "express";
+import { UserService } from "@/application/services";
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  GetUsersQueryDto,
+  UserResponseDto,
+  UpdateUserRoleDto,
+  BulkDeleteUsersDto,
+} from "@/application/dtos";
+import { plainToInstance } from "class-transformer";
 
-// export class UserController {
-//     private userService: UserService;
+/**
+ * Controller for handling user-related HTTP requests
+ * Handles routing and request/response transformation
+ */
+export class UserController {
+  private userService: UserService;
 
-//     constructor(userService: UserService) {
-//         this.userService = userService;
-//     }
+  constructor(userService: UserService) {
+    this.userService = userService;
+  }
 
-//     // Create a new user
-//     createUser = async (req: Request, res: Response) => {
-//         try {
-//             const userData: CreateUserDto = req.body;
-//             const newUser = await this.userService.createUser(userData);
-//             return res.status(201).json({
-//                 success: true,
-//                 data: newUser
-//             });
-//         } catch (error: any) {
-//             const [status, message] = error.message.split('::');
-//             return res.status(status || 500).json({
-//                 success: false,
-//                 error: message || 'Server error'
-//             });
-//         }
-//     };
+  /**
+   * Create a new user
+   */
+  createUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userData: CreateUserDto = req.body;
+      const newUser = await this.userService.createUser(userData);
+      // Convert to response DTO to exclude sensitive data
+      const userResponse = plainToInstance(
+        UserResponseDto,
+        newUser.toObject(),
+        {
+          excludeExtraneousValues: true,
+        }
+      );
 
-//     // Get user by ID
-//     getUser = async (req: Request, res: Response) => {
-//         try {
-//             const { id } = req.params;
-//             if (!id) {
-//                 return res.status(400).json({
-//                     success: false,
-//                     error: 'User ID is required'
-//                 });
-//             }
-//             const user = await this.userService.getUserById(id);
-//             return res.status(200).json({
-//                 success: true,
-//                 data: user
-//             });
-//         } catch (error: any) {
-//             const [status, message] = error.message.split('::');
-//             const statusCode = status ? parseInt(status, 10) : 500;
-//             return res.status(statusCode).json({
-//                 success: false,
-//                 error: message || 'Server error'
-//             });
-//         }
-//     };
+      res.status(201).json({
+        success: true,
+        data: userResponse,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-//     // Update user
-//     updateUser = async (req: Request, res: Response) => {
-//         try {
-//             const { id } = req.params;
-//             if (!id) {
-//                 return res.status(400).json({
-//                     success: false,
-//                     error: 'User ID is required'
-//                 });
-//             }
-//             const updateData: UpdateUserDto = req.body;
-//             const updatedUser = await this.userService.updateUser(id, updateData);
-//             return res.status(200).json({
-//                 success: true,
-//                 data: updatedUser
-//             });
-//         } catch (error: any) {
-//             const [status, message] = error.message.split('::');
-//             const statusCode = status ? parseInt(status, 10) : 500;
-//             return res.status(statusCode).json({
-//                 success: false,
-//                 error: message || 'Server error'
-//             });
-//         }
-//     };
+  /**
+   * Get user by ID
+   */
+  getUserById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const user = await this.userService.getUserById(id);
 
-//     // Delete user
-//     deleteUser = async (req: Request, res: Response) => {
-//         try {
-//             const { id } = req.params;
-//             if (!id) {
-//                 return res.status(400).json({
-//                     success: false,
-//                     error: 'User ID is required'
-//                 });
-//             }
-//             await this.userService.deleteUser(id);
-//             return res.status(200).json({
-//                 success: true,
-//                 data: {}
-//             });
-//         } catch (error: any) {
-//             const [status, message] = error.message.split('::');
-//             const statusCode = status ? parseInt(status, 10) : 500;
-//             return res.status(statusCode).json({
-//                 success: false,
-//                 error: message || 'Server error'
-//             });
-//         }
-//     };
+      // Convert to response DTO
+      const userResponse = plainToInstance(UserResponseDto, user.toObject(), {
+        excludeExtraneousValues: true,
+      });
 
-//     // Get all users with pagination and filtering
-//     getUsers = async (req: Request, res: Response) => {
-//         try {
-//             const query: GetUsersQueryDto = req.query as any;
-//             const result = await this.userService.getAllUsers(query);
-//             return res.status(200).json({
-//                 success: true,
-//                 data: result.users,
-//                 pagination: result.pagination
-//             });
-//         } catch (error: any) {
-//             const [status, message] = error.message.split('::');
-//             return res.status(status || 500).json({
-//                 success: false,
-//                 error: message || 'Server error'
-//             });
-//         }
-//     };
-// }
+      res.status(200).json({
+        success: true,
+        data: userResponse,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Update user
+   */
+  updateUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const updateData: UpdateUserDto = req.body;
+
+      const updatedUser = await this.userService.updateUser(id, updateData);
+
+      // Convert to response DTO
+      const userResponse = plainToInstance(
+        UserResponseDto,
+        updatedUser.toObject(),
+        {
+          excludeExtraneousValues: true,
+        }
+      );
+
+      res.status(200).json({
+        success: true,
+        data: userResponse,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Delete user
+   */
+  deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      await this.userService.deleteUser(id);
+
+      res.status(200).json({
+        success: true,
+        message: "User deleted successfully",
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Get all users with pagination and filtering
+   */
+  getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const query: GetUsersQueryDto = req.query as any;
+      const result = await this.userService.getAllUsers(query);
+
+      // Convert each user to response DTO
+      const usersResponse = result.users.map((user) =>
+        plainToInstance(UserResponseDto, user.toObject(), {
+          excludeExtraneousValues: true,
+        })
+      );
+
+      res.status(200).json({
+        success: true,
+        data: usersResponse,
+        pagination: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Update user role (Admin only)
+   */
+  updateUserRole = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const { role }: UpdateUserRoleDto = req.body;
+
+      const updatedUser = await this.userService.updateUser(id, { role });
+
+      // Convert to response DTO
+      const userResponse = plainToInstance(
+        UserResponseDto,
+        updatedUser.toObject(),
+        {
+          excludeExtraneousValues: true,
+        }
+      );
+
+      res.status(200).json({
+        success: true,
+        data: userResponse,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Bulk delete users (Admin only)
+   */
+  bulkDeleteUsers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userIds }: BulkDeleteUsersDto = req.body;
+
+      // Delete users in parallel
+      await Promise.all(userIds.map((id) => this.userService.deleteUser(id)));
+
+      res.status(200).json({
+        success: true,
+        message: "Users deleted successfully",
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+}
