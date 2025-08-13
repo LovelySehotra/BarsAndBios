@@ -9,5 +9,8 @@ export const {
     PORT,
     DATABASE_URL,
     JWT_SECRET,
-    ENV
+    ENV,
+    SPOTIFY_CLIENT_ID,
+    SPOTIFY_CLIENT_SECRET,
+    FRONTENT
 } = process.env

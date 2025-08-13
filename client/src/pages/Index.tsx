@@ -1,11 +1,45 @@
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ReviewCard from "@/components/ReviewCard";
 import NewsCard from "@/components/NewsCard";
 import TrendingSection from "@/components/TrendingSection";
 import Footer from "@/components/Footer";
+import axios from "axios";
+
+interface Track {
+  id: string;
+  name: string;
+  artist: string;
+  previewUrl: string | null;
+  albumImage: string;
+  spotifyUrl: string;
+}
 
 const Index = () => {
+  const [featuredTrack, setFeaturedTrack] = useState<Track | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchFeaturedTrack = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get('https://barsandbios-1.onrender.com/api/albums/search/track', {
+          params: { query: 'Travis Scott FE!N' } // Default search query
+        });
+        setFeaturedTrack(response.data);
+      } catch (err) {
+        console.error('Error fetching track:', err);
+        setError('Failed to load featured track');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFeaturedTrack();
+  }, []);
+
   // Mock data for reviews
   const featuredReview = {
     title: "DAMN.",
@@ -87,6 +121,53 @@ const Index = () => {
       <Header />
       <Hero />
       
+      {/* Featured Track Section */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-bold text-white mb-6">Featured Track</h2>
+          {isLoading ? (
+            <div className="flex justify-center items-center h-40">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : error ? (
+            <div className="text-red-500 text-center py-4">{error}</div>
+          ) : featuredTrack ? (
+            <div className="bg-card p-6 rounded-lg shadow-lg">
+              <div className="flex flex-col md:flex-row items-center">
+                <img 
+                  src={featuredTrack.albumImage} 
+                  alt={featuredTrack.name}
+                  className="w-48 h-48 object-cover rounded-lg mb-4 md:mb-0 md:mr-6"
+                />
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white">{featuredTrack.name}</h3>
+                  <p className="text-gray-300 mb-4">{featuredTrack.artist}</p>
+                  {featuredTrack.previewUrl && (
+                    <audio 
+                      src={featuredTrack.previewUrl} 
+                      controls 
+                      className="w-full max-w-md mb-4"
+                    />
+                  )}
+                  <a
+                    href={featuredTrack.spotifyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors"
+                  >
+                    <span>Play on Spotify</span>
+                    <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                      <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </section>
+      
       {/* Featured Review Section */}
       <section className="py-16 bg-dark-bg">
         <div className="container mx-auto px-6">
@@ -105,6 +186,7 @@ const Index = () => {
           </div>
         </div>
       </section>
+      
 
       {/* Recent Reviews Section */}
       <section className="py-16 bg-dark-card">
