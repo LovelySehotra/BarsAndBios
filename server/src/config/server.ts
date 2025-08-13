@@ -32,7 +32,7 @@ export class Server {
   }
 
   start() {
-    const port = 1209;
+    const port = 10000;
     connectionToDB();
     this.app.listen(port, () => {
       console.log("Yes i am working");
