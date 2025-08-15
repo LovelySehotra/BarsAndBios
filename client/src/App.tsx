@@ -14,6 +14,7 @@ import SubmitReview from "./pages/SubmitReview";
 import ArtistDetail from "./pages/ArtistDetail";
 import NotFound from "./pages/NotFound";
 import AddNewsArticle from "./pages/AddNewsArticle";
+import AddAlbum from "./pages/AddAlbum";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/artist/:id" element={<ArtistDetail />} />
           <Route path="/albums" element={<Albums />} />
           <Route path="/album/:id" element={<AlbumDetail />} />
+          <Route path="/add-album" element={<AddAlbum />} />
           <Route path="/news" element={<News />} />
           <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/add-news" element={<AddNewsArticle />} />
